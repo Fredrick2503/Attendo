@@ -13,6 +13,15 @@ from .serializer import loginserializer,Studentserializer,Facultyserializer
 from datetime import timedelta
 # # Create your views here.
 
+
+class logout(APIView):
+    def post(self,request):
+        return Response({  
+            "data": {},
+            "message": "User logged out",
+            "statusCode": 200,
+            "success": True})
+
 # #Login endpoint to fetch accestoken and userdata on login
 class login(APIView):
     def post(self, request):

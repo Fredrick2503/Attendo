@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import login,profileview
+from .views import login,profileview,logout
 
 urlpatterns = [
     path('login/',login.as_view()),
+    path('logout/',logout.as_view()),
     path('refresh/',TokenRefreshView.as_view()),
     path('profile/',profileview.as_view()),
 ]
