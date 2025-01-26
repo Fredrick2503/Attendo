@@ -16,10 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import login
 
 urlpatterns = [
     path('login/',login.as_view()),
+    path('refresh/',TokenRefreshView.as_view())
     # path('profile/<str:enrollment_id>/',profileview.as_view()),
 ]
