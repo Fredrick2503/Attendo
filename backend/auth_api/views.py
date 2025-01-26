@@ -6,9 +6,10 @@ from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 # from .models import StudentProfile,profile,FacultyProfile,department,courses
 from users.models import *
-from .serializer import loginserializer
+from .serializer import loginserializer,Studentserializer,Facultyserializer
 from datetime import timedelta
 # # Create your views here.
 
@@ -45,21 +46,25 @@ class login(APIView):
         
 
 
-# class profileview(APIView):
-#     permission_classes = [IsAuthenticated]
-#     def get(self,request,enrollment_id):
-#         # authentication_classes = [JWTAuthentication]
-#         profile_data=Studentserializer(StudentProfile.objects.get(enrollment_id=enrollment_id)).data
-#         print(profile_data)
-#         if not profile_data:
-#             pass
-#         return Response({
-#     "success": True,
-#     "message": "User details fetched successfully.",
-#     "data": {
-#         "first_name":profile_data['profile']['first_name'],
-#         "last_name": profile_data['profile']['last_name'],
-#         "enrollment_id":profile_data["enrollment_id"],
-#         "department":(department.objects.get(dept_id=profile_data['dept'])).get_dept(),
-#     }
-# })
+class profileview(APIView):
+    permission_classes = [IsAuthenticated]        
+    authentication_classes = [JWTAuthentication]
+    def get(self,request):
+        validated_data=JWTAuthentication().authenticate(request)
+        user=validated_data[0]
+        try:
+            if user.is_student():
+                user=Student.objects.get(email=user.email)
+                profile_data = Studentserializer(user).data
+            if user.is_faculty():
+                user=Faculty.objects.get(email=user.email)
+                profile_data = Facultyserializer(user).data
+        except:
+            ValueError
+        if not profile_data:
+            pass
+        return Response({
+    "success": True,
+    "message": "User details fetched successfully.",
+    "data": profile_data
+})
