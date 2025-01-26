@@ -19,11 +19,11 @@ from users.models import CustomUser,Student,Faculty
 class Studentserializer(serializers.ModelSerializer):
     class Meta:
         model=Student
-        fields=['email','first_name','last_name','phone_no','address','enrollment_id','department','semester']
+        fields=['enrollment_id','first_name','last_name','semester','email','phone_no','address','department']
 class Facultyserializer(serializers.ModelSerializer):
     class Meta:
         model=Faculty
-        fields=['email','first_name','last_name','phone_no','address','faculty_id','department']
+        fields=['faculty_id','first_name','last_name','email','phone_no','address','department']
         
 class loginserializer(serializers.Serializer):
     email = serializers.CharField(max_length=50)
@@ -41,9 +41,6 @@ class loginserializer(serializers.Serializer):
         if not user:
             errs["non_field_errors"] = "Invalid credentials"
 
-        if user and not user.is_active:
-            errs["non_field_errors"] = "User is deactivated. Please contact the administrator."
-
         if errs:
             raise serializers.ValidationError(errs)
         # Attach user object to validated data for use in the view
@@ -53,5 +50,6 @@ class loginserializer(serializers.Serializer):
         if user.is_faculty():
             attrs["user"] = Faculty.objects.get(email=user.email)
             attrs["profile"] = Facultyserializer(attrs["user"]).data
+        
         return attrs
 

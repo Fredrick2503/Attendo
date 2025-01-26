@@ -61,15 +61,12 @@ class profileview(APIView):
     def get(self,request):
         validated_data=JWTAuthentication().authenticate(request)
         user=validated_data[0]
-        try:
-            if user.is_student():
-                user=Student.objects.get(email=user.email)
-                profile_data = Studentserializer(user).data
-            if user.is_faculty():
-                user=Faculty.objects.get(email=user.email)
-                profile_data = Facultyserializer(user).data
-        except:
-            ValueError
+        if user.is_student():
+            user=Student.objects.get(email=user.email)
+            profile_data = Studentserializer(user).data
+        if user.is_faculty():
+            user=Faculty.objects.get(email=user.email)
+            profile_data = Facultyserializer(user).data
         if not profile_data:
             pass
         return Response({
