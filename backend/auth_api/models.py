@@ -1,5 +1,5 @@
 from django.db import models
-# from users.models import CustomUser
+import uuid
 # Create your models here.
 # class profile(models.Model):
 #     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
@@ -19,13 +19,22 @@ class department(models.Model):
     def get_dept(self):
         return f'{self.dept_name} ({self.dept_id})'
 
-# class courses(models.Model):
-#     course_id=models.CharField(max_length=7,null=False,unique=True,primary_key=True)
-#     course_name=models.CharField(max_length=30,null=False,unique=True)
-#     dept=models.OneToOneField(department,on_delete=models.CASCADE,related_name="course_in_department")
-#     credit=models.IntegerField()
-#     def __str__(self) -> str:
-#         return f'{self.course_name} ({self.course_id})'
+class courses(models.Model):
+    course_id=models.CharField(max_length=7,null=False,unique=True,primary_key=True)
+    course_name=models.CharField(max_length=30,null=False,unique=True)
+    dept=models.OneToOneField(department,on_delete=models.CASCADE,related_name="course_in_department")
+    credit=models.IntegerField()
+    def __str__(self) -> str:
+        return f'{self.course_name} ({self.course_id})'
+    
+class class_room(models.Model):
+    id = models.CharField(max_length=36,default=uuid.uuid4,primary_key=True , unique=True, editable=False)
+    room_no=models.CharField(max_length=5,unique=True)
+    def __str__(self):
+        return self.room_no
+
+
+
 
 # class FacultyProfile(models.Model):
 #     profile=models.OneToOneField(profile,on_delete=models.CASCADE,related_name="faculty_profile")

@@ -15,11 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
+from .views import generate_attendance_qr,validate_attendance_qr
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/auth/',include('auth_api.urls')),
-    path('api/attendance/',include('attendance_api.urls')),
-    # path('client/',include)
+    path('generate-qr/',generate_attendance_qr.as_view()),
+    path('validate-qr/',validate_attendance_qr.as_view()),
+
 ]
