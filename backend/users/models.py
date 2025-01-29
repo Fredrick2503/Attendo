@@ -86,7 +86,7 @@ class StudentManager(CustomUserManager):
 
 class Student(CustomUser):
     enrollment_id=models.CharField(max_length=10,unique=True)
-    department=models.OneToOneField(department,on_delete=models.SET_NULL,null=True)
+    department=models.ManyToManyField(department)
     semester=models.IntegerField(default=1)
     objects = StudentManager()
 
@@ -103,7 +103,7 @@ class FacultyManager(CustomUserManager):
 
 class Faculty(CustomUser):
     faculty_id=models.CharField(max_length=10,unique=True)
-    department=models.ForeignKey(department,on_delete=models.SET_NULL,null=True)
+    department=models.ManyToManyField(department)
     objects = FacultyManager()
 
     def save(self, *args, **kwargs):

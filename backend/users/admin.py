@@ -96,7 +96,7 @@ class UserAdmin(BaseUserAdmin):
 class StudentAdmin(UserAdmin):
     form=StudentChangeForm
     add_form=StudentCreationForm
-    list_display=("enrollment_id",'email','department','semester','is_active')
+    list_display=("enrollment_id",'email','semester','is_active')
     fieldsets =(('Student Info',{'fields':("enrollment_id",'first_name','last_name','phone_no','address','email','department','semester')}),('Status',{'fields':('is_active',)}))
     add_fieldsets =(('Student Info',{'fields':("enrollment_id",'first_name','last_name','phone_no','address','email','password1','password2','department','semester')}),('Status',{'fields':('is_active',)}))
     search_fields=("enrollment_id","semester")
@@ -105,7 +105,7 @@ class StudentAdmin(UserAdmin):
 class FacultyAdmin(UserAdmin):
     form=FacultyChangeForm
     add_form=FacultyCreationForm
-    list_display=("faculty_id",'email','department','is_active')
+    list_display=("faculty_id",'email','is_active')
     fieldsets =(('Faculty info',{'fields':('email','first_name','last_name','phone_no','address','faculty_id','department')}),('Status',{'fields':('is_active',)}))
     add_fieldsets =((None,{'fields':('first_name','last_name','phone_no','address','faculty_id','department','email','password1','password2')}),('Status',{'fields':('is_active',)}))
     search_fields=("faculty_id",)

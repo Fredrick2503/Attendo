@@ -6,9 +6,13 @@ from datetime import datetime, timedelta
 from django.core.cache import cache
 import jwt
 from backend.settings import SECRET_KEY
+from asgiref.sync import async_to_sync
+from channels.layers import *
+import json
 # Create your models here.
 
 class section(models.Model):
+    
     id = models.CharField(max_length=36,default=uuid.uuid4,primary_key=True,unique=True, editable=True)
     section=models.CharField(max_length=5)
     department=models.ManyToManyField(department)
@@ -18,7 +22,7 @@ class section(models.Model):
     
 
 class class_slot(models.Model):
-    id = models.CharField(default=uuid.uuid4,max_length=36,primary_key=True,unique=True, editable=True)
+    id = models.CharField(default=("".join((str(uuid.uuid4()).split('-')))),max_length=36,primary_key=True,unique=True, editable=True)
     faculty=models.ManyToManyField(Faculty)
     room_no=models.ManyToManyField(class_room)
     section=models.ManyToManyField(section)
@@ -39,11 +43,20 @@ class class_slot(models.Model):
     #     super().save(*args,**kwargs)
 
     def save(self, *args, **kwargs):
-        if not self.id:  # Ensure ID is generated
-            self.id = str(uuid.uuid4())
         super().save(*args, **kwargs)  # Save before generating the token
         self.token = self.generate_attendance_token()
         cache.set(self.token, {"class_id": self.id, "timestamp": str(self.timestamp)}, timeout=900)
+        # layer=get_channel_layer()
+        # async_to_sync(layer.group_add)(
+        #     "client" , ticket
+        # )
+        # async_to_sync(layer.group_send)(
+        #     ticket,{
+        #         'type':"renderQR",
+        #         'value': json.dumps({"token":""})
+        #     }
+        # )
+        # print(self,vars(self))
         super().save(*args, **kwargs)
 
 
@@ -54,6 +67,11 @@ class class_slot(models.Model):
 class attendance(models.Model):
     slot=models.ManyToManyField(class_slot)
     student=models.ManyToManyField(Student)
+
+    # def save(self,*args,**kwargs):
+    #     super().save(*args,**kwargs)
+        
+    #     return super().save(*args,**kwargs)
 
 
     

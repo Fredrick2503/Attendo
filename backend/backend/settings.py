@@ -171,8 +171,8 @@ REST_FRAMEWORK = {
     ),
 }
 
-from rest_framework_simplejwt.settings import api_settings
-api_settings.USER_ID_FIELD = 'email'
+# from rest_framework_simplejwt.settings import api_settings
+# api_settings.USER_ID_FIELD = 'email'
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
@@ -192,7 +192,7 @@ SIMPLE_JWT = {
 
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    "USER_ID_FIELD": "id",
+    "USER_ID_FIELD": "email",
     "USER_ID_CLAIM": "user_id",
     "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
 
