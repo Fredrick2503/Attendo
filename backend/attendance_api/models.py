@@ -31,7 +31,7 @@ class class_slot(models.Model):
             'slot':str(self.id),
             "timestamp": str(self.timestamp),
         }
-        token = tokens.generate(payload)
+        token = tokens().generate(payload=payload)
         # c=cache.set(token, {"class_id": self.id, "timestamp": payload["timestamp"]}, timeout=900)
         # print(c)
         return token

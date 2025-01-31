@@ -34,7 +34,7 @@ class JwtAuthMiddleware(BaseMiddleware):
        # Close old database connections to prevent usage of timed out connections
         close_old_connections()
         print(scope)
-        print(scope['headers']["b'authorization'"].decode("utf8"))
+        # print(scope['headers']["b'authorization'"].decode("utf8"))
         # print(scope["query_string"].decode("utf8"))
         # Get the token
         try:

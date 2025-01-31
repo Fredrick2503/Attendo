@@ -5,12 +5,12 @@ import io
 class QRAttendance(AsyncWebsocketConsumer):
     async def connect(self):
         self.id = self.scope['url_route']['kwargs']['c_id']  # Extract class ID from URL
-        self.user = self.scope['user']
+        # self.user = self.scope['user']
 
         # Add this WebSocket to the channel group
         await self.channel_layer.group_add(self.id, self.channel_name)
 
-        print(self.user)
+        # print(self.user)
         await self.accept()
 
     async def send_qr_image(self, event):
@@ -18,19 +18,16 @@ class QRAttendance(AsyncWebsocketConsumer):
         # image_buffer=io.BytesIO(event.get("path"))
         print(event)
         # base64_image = base64.b64encode(image_buffer.getvalue()).decode("utf-8")
-
-        await self.send(text_data=json.dumps({"image": event.get("path")}))
+        text_data=json.dumps({"image": event.get("path")})
+        await self.send(text_data=text_data)   
 
         # Send initial data to the group
         await self.channel_layer.group_send(
             self.id, {
                 'type': "renderQR",
-                'value': self.user.email
+                'value': text_data
             }
         )
-
-        # Send user email to WebSocket client
-        await self.send(text_data=json.dumps({"data": [self.user.email]}))
 
     async def receive(self, text_data=None, bytes_data=None):
         print(self.id, self.groups)

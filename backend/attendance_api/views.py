@@ -58,8 +58,11 @@ from asgiref.sync import sync_to_async, async_to_sync
 from backend.services import Qrcode
 from channels.layers import get_channel_layer
 import base64
+from rest_framework.generics import ListAPIView
 from io import BytesIO
+from .serializer import studentlistserializer
 import asyncio  # Required for running async Django ORM queries
+from django.shortcuts import get_object_or_404
 
 class generate_attendance_qr(APIView):
     permission_classes = [IsAuthenticated]        
@@ -97,20 +100,20 @@ class generate_attendance_qr(APIView):
             qr_image = qr_generator.createQR(payload=token)
 
             # Convert QR image to base64 for WebSocket transmission
-            buffer = BytesIO(qr_image)
-            qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            # buffer = BytesIO(qr_image)
+            qr_base64 = base64.b64encode(qr_image.getvalue()).decode("utf-8")
 
             # Send QR Code over WebSocket (sync_to_async is needed for WebSockets)
+            sleep(20)
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
-                str(123),  # Group name must be a string
+                str(slot.id),  # Group name must be a string
                 {
                     "type": "send_qr_image",
                     "path": qr_base64  # Sending as a base64 string
                 }
             )
             print(str(slot.id))
-            # sleep(20)
             return HttpResponse(qr_image, content_type="image/png")
 
         except Exception as e:
@@ -186,3 +189,19 @@ class validate_attendance_qr(APIView):
             return Response({"error": "QR code expired"}, status=400)
         # except :
         #     return Response({"error": "Invalid QR code"}, status=400)
+
+class sectionlist(ListAPIView):
+    serializer_class = studentlistserializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        section_id = self.kwargs.get("section_id")  # Get 'section_id' from URL
+        section_instance = get_object_or_404(section, id=section_id)  # Ensure section exists
+        return student_list.objects.filter(section=section_instance)  # Filter by section
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        print(serializer.data)
+        res={"students":[ i[0] for i in serializer.data]}
+        return Response(res)

@@ -10,7 +10,7 @@ import string
 
 class Qrcode:
     def createQR(self,payload):
-        qr=QRCode(version=1,box_size=10,border=5)
+        qr=QRCode(version=3,box_size=10,border=5)
         qr.add_data(payload)
         qr.make(fit=True)
         img=qr.make_image(fill_color="black",bacl_color="white")
@@ -18,7 +18,7 @@ class Qrcode:
         img.save(buffer,format="PNG")
         buffer.seek(0)
         print(buffer)
-        return buffer.getvalue()
+        return buffer
     
 
 

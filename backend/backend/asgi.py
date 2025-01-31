@@ -33,6 +33,7 @@ application = ProtocolTypeRouter(
     {
         "http": get_asgi_application(),
         #  "websocket": URLRouter(routing.ws_urlpattern),
-         "websocket": AllowedHostsOriginValidator(JwtAuthMiddlewareStack(URLRouter(routing.ws_urlpattern))),
+        #  "websocket": AllowedHostsOriginValidator(JwtAuthMiddlewareStack(URLRouter(routing.ws_urlpattern))),
+         "websocket": AllowedHostsOriginValidator(AuthMiddlewareStack(URLRouter(routing.ws_urlpattern))),
     }
 )

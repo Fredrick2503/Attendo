@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import generate_attendance_qr,validate_attendance_qr
+from .views import generate_attendance_qr,validate_attendance_qr,sectionlist
 
 urlpatterns = [
     path('generate-qr/',generate_attendance_qr.as_view()),
     path('validate-qr/',validate_attendance_qr.as_view()),
+    path('students/<str:section_id>',sectionlist.as_view()),
 
 ]
