@@ -3,3 +3,4 @@ djangorestframework
 djangorestframework-simplejwt
 pillow
 qrcode
+django-cors-headers

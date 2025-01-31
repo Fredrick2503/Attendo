@@ -1,59 +1,60 @@
-from channels.generic.websocket import WebsocketConsumer
-from asgiref.sync import async_to_sync
+from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-import random
+import base64
+import io
+class QRAttendance(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.id = self.scope['url_route']['kwargs']['c_id']  # Extract class ID from URL
+        self.user = self.scope['user']
 
-class clientConnect(WebsocketConsumer):
-    def __init__(self, *args, **kwargs):
-        
-        super().__init__(*args, **kwargs)
+        # Add this WebSocket to the channel group
+        await self.channel_layer.group_add(self.id, self.channel_name)
 
-    def connect(self):
-        self.id = self.scope['url_route']['kwargs']['c_id']  # Extract ID from the URL route
-        self.user=self.scope['user']
-        async_to_sync(self.channel_layer.group_add)(
-            self.id, self.channel_name
-        )
         print(self.user)
-        self.accept()
-        async_to_sync(self.channel_layer.group_send)(
-            self.id,{
-                'type':"renderQR",
-                'value':self.user.email
+        await self.accept()
+
+    async def send_qr_image(self, event):
+        """Reads and sends an image as Base64 over WebSockets."""
+        # image_buffer=io.BytesIO(event.get("path"))
+        print(event)
+        # base64_image = base64.b64encode(image_buffer.getvalue()).decode("utf-8")
+
+        await self.send(text_data=json.dumps({"image": event.get("path")}))
+
+        # Send initial data to the group
+        await self.channel_layer.group_send(
+            self.id, {
+                'type': "renderQR",
+                'value': self.user.email
             }
         )
-        self.send(text_data=json.dumps({"data": [self.user.email]}))
 
-    # def connect(self):
-    #     self.id=str(random.randint(111,999))
-    #     self.group=(self.scope['url_route']['kwargs']['c_id'])
-    #     async_to_sync(self.channel_layer.group_add)(
-    #         self.id,self.group 
-    #     )
-    #     # print(self,vars(self))
-    #     self.accept()
-    #     self.send(text_data=json.dumps({"data":[self.id]}))
+        # Send user email to WebSocket client
+        await self.send(text_data=json.dumps({"data": [self.user.email]}))
 
+    async def receive(self, text_data=None, bytes_data=None):
+        print(self.id, self.groups)
 
-
-    def receive(self, text_data=None, bytes_data=None):
-        # self.send(text_data=text_data)
-        print(self.id,self.groups)
-        async_to_sync(self.channel_layer.group_send)(
-            self.id,{
-                'type':"renderQR",
-                'value':text_data
+        # Send received message to the group
+        await self.channel_layer.group_send(
+            self.id, {
+                'type': "renderQR",
+                'value': text_data
             }
         )
-        return super().receive(text_data, bytes_data)
-    
-    def renderQR(self,event):
-        self.send(text_data=(event.get('value')))
+
+    async def renderQR(self, event):
+        # Send event data to WebSocket client
+        await self.send(text_data=json.dumps({"value": event.get('value')}))
         print(event)
 
+    async def disconnect(self, close_code):
+        # Remove WebSocket from the channel group
+        await self.channel_layer.group_discard(self.id, self.channel_name)
 
 
-class cilent_connet(WebsocketConsumer):
+
+class cilent_connet(AsyncWebsocketConsumer):
     def connect(self):
         self.clientid = self.scope['url_route']['kwargs']['c_id']
         return super().connect()

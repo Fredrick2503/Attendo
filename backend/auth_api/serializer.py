@@ -15,6 +15,23 @@ from users.models import CustomUser,Student,Faculty
 #         fields=('first_name','last_name')
 
 
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+
+    def validate_old_password(self, value):
+        """Check if the old password is correct."""
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Old password is incorrect.")
+        return value
+
+    def validate_new_password(self, value):
+        """You can add custom password validation rules here."""
+        if len(value) < 6:
+            raise serializers.ValidationError("New password must be at least 6 characters long.")
+        return value
+
 
 class Studentserializer(serializers.ModelSerializer):
     class Meta:

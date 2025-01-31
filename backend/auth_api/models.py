@@ -1,5 +1,6 @@
 from django.db import models
-import uuid
+from backend.services import uniqueid,tokens
+
 # Create your models here.
 # class profile(models.Model):
 #     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
@@ -28,7 +29,7 @@ class courses(models.Model):
         return f'{self.course_name} ({self.course_id})'
     
 class class_room(models.Model):
-    id = models.CharField(max_length=36,default=uuid.uuid4,primary_key=True , unique=True, editable=False)
+    id = models.CharField(max_length=36,default=uniqueid.generateid,primary_key=True , unique=True, editable=False)
     room_no=models.CharField(max_length=5,unique=True)
     def __str__(self):
         return self.room_no
