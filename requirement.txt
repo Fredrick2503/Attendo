@@ -4,3 +4,6 @@ djangorestframework-simplejwt
 pillow
 qrcode
 django-cors-headers
+channels
+channels_redis
+django-redis

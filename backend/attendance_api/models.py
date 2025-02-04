@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import Faculty,Student
 from auth_api.models import class_room,courses,department
+from client_api.models import *
 from asgiref.sync import async_to_sync
 from channels.layers import *
 import json
@@ -25,7 +26,7 @@ class class_slot(models.Model):
     course=models.ManyToManyField(courses)
     timestamp=models.DateTimeField(auto_now_add=True)
     token=models.CharField(max_length=250,blank=True)
-
+    client=models.ManyToManyField(client)
     def generate_attendance_token(self):
         payload = {
             'slot':str(self.id),
@@ -56,6 +57,11 @@ class class_slot(models.Model):
         # )
         # print(self,vars(self))
         super().save(*args, **kwargs)
+
+    def get_clientid(self):
+        client=[i for i in self.client.all()][0]
+        print(client.id)
+        return client.id
 
 
     def __str__(self):

@@ -7,6 +7,8 @@ from django.core.cache import cache
 from datetime import datetime,timezone,timedelta
 import random 
 import string
+import base64
+from jwt.exceptions import ExpiredSignatureError, DecodeError
 
 class Qrcode:
     def createQR(self,payload):
@@ -17,8 +19,9 @@ class Qrcode:
         buffer=BytesIO()
         img.save(buffer,format="PNG")
         buffer.seek(0)
-        print(buffer)
-        return buffer
+        Qr=base64.b64encode(buffer.getvalue()).decode("utf-8")
+        # print(Qr)
+        return (Qr,buffer)
     
 
 
@@ -30,27 +33,42 @@ class uniqueid:
 
 
 class tokens:
-    def generate(self,payload={},timeout=datetime.now(timezone.utc)+timedelta(minutes=1)):
-        payload["exp"]=timeout
-        self= jwt.encode(payload,settings.SECRET_KEY,algorithm="HS256")
-        now=datetime.now(timezone.utc).timestamp()
-        cache.set(self,payload,timeout=(timeout.timestamp()-now))
-        return self 
-    
-    def decode(self,token):
-        try:
-            self=jwt.decode(token,settings.SECRET_KEY,algorithms="HS256")
-            payload=cache.get(token)
-            if not payload:
-                raise {"error":"Invalid QR CODE"}
-            if self==payload:
-                return self
-                
-        except jwt.ExpiredSignatureError as e:
-            raise {"error":e}
-        except jwt.InvalidTokenError as e:
-            raise {"error":e}
+    def generate(self, payload={}, timeout_minutes=180):
+        """Generates a JWT token and caches it with an expiry time."""
+        
+        now = datetime.now(timezone.utc)
+        exp_time = now + timedelta(minutes=timeout_minutes)
+        
+        payload["iat"] = now.timestamp()  # Issued at
+        payload["exp"] = exp_time.timestamp()  # Expiry time
+        
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+        
+        # Store token in cache until expiration
+        cache.set(token, payload, timeout=(exp_time - now).total_seconds())
 
+        print("Generated Token:", token)
+        print("Cached Payload:", cache.get(token))
+
+        return token 
+
+    def decode(self, token):
+        """Decodes a JWT token and validates against cache."""
+        try:
+            print("Received Token:", token)
+            decoded_payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+
+            # Retrieve from cache for additional validation
+            cached_payload = cache.get(token)
+            # if not cached_payload:
+            #     raise Exception("Token is invalid or expired.")
+
+            return decoded_payload
+        
+        except ExpiredSignatureError:
+            raise Exception("Token has expired. Please log in again.")
+        except DecodeError:
+            raise Exception("Invalid token. Authentication failed.")
 
 class passwordgenrator:
     def make(size=8, chars=string.ascii_uppercase+ string.ascii_lowercase+ string.digits):
@@ -66,3 +84,60 @@ class mailer:
         self.body=body
     def send(self):
         print(f"----------------------------------------------\nTo:{self.to}\nSubject:f{self.subject}\n\nBody:\nf{self.body}\n----------------------------------------------")
+
+
+class statemanager:
+    def __init__(self,id,channel_name,host_channel_name=None):
+        self.id=id
+        # self.state="offline"
+        clientstate=cache.get(self.id)
+        if not clientstate:   
+            cache.set(self.id,{"state":"offline","channel_name":channel_name,"host_channel_name":host_channel_name},timeout=600)
+
+    def makeactive(self,host_channel_name):
+        clientstate=cache.get(self.id)
+        if clientstate:
+            # self.state="active"
+            clientstate['state']="active"
+            clientstate["host_channel_name"]=host_channel_name
+            cache.set(self.id,clientstate,timeout=600)
+        else:
+            cache.set(self.id,{'state':"active"},timeout=(600))
+    def makeinactive(self):
+        clientstate=cache.get(self.id)
+        if clientstate:
+            # self.state="inactive"
+            clientstate['state']="inactive"
+
+            cache.set(self.id,clientstate,600)
+        else:
+            cache.set(self.id,{'state':"inactive"},timeout=(600))
+    
+    def makeoffline(self):
+        clientstate=cache.get(self.id)
+        if clientstate:
+            # self.state="offline"
+            clientstate['state']="offline"
+            cache.set(self.id,clientstate,600)
+        else:
+            cache.set(self.id,{'state':"offline"},timeout=(600))
+
+    def isactive(self):
+        clientstate=cache.get(self.id)
+        if clientstate:
+            return clientstate["state"]=="active"
+        return False
+    def isinactive(self):
+        clientstate=cache.get(self.id)
+        if clientstate:
+            return clientstate["state"]=="inactive"
+        return False
+    def isoffline(self):
+        clientstate=cache.get(self.id)
+        if clientstate:
+            return clientstate["state"]=="offline"
+        return True
+    def getstate(self):
+        return cache.get(self.id).get("state")
+    
+        

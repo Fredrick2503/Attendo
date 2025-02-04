@@ -152,14 +152,36 @@ application = ProtocolTypeRouter({
     # Just HTTP for now. (We can add other protocols later.)
 })
 
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer"
+#     }
+# }
+
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis://:6qDLCmK0Y4EAdsLK3Vn0RlwcjDglwFsj@redis-14967.c278.us-east-1-4.ec2.redns.redis-cloud.com:14967")],
+        },
+    },
 }
 
 
 ASGI_APPLICATION = "backend.asgi.application"
+
+#cache setup
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://:6qDLCmK0Y4EAdsLK3Vn0RlwcjDglwFsj@redis-14967.c278.us-east-1-4.ec2.redns.redis-cloud.com:14967",  # Change IP if Redis is on a different server
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+
 
 ### drf setup 
 REST_FRAMEWORK = {
